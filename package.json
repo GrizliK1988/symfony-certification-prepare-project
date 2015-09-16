@@ -1,0 +1,25 @@
+{
+  "name": "symfony-certification-prepare-project",
+  "version": "1.0.0",
+  "description": "Test project that affects all components from Symfony2",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GrizliK1988/symfony-certification-prepare-project.git"
+  },
+  "author": "Dmitry Grachikov <dgrachikov@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GrizliK1988/symfony-certification-prepare-project/issues"
+  },
+  "homepage": "https://github.com/GrizliK1988/symfony-certification-prepare-project#readme",
+  "dependencies": {
+    "bootstrap": "^3.3.5",
+    "jquery": "^2.1.4",
+    "react": "^0.13.3",
+    "webpack": "^1.12.1"
+  }
+}

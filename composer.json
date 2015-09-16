@@ -1,0 +1,7 @@
+{
+    "require": {
+        "symfony/asset": "^2.7",
+        "symfony/http-foundation": "^2.7",
+        "symfony/class-loader": "^2.7"
+    }
+}
