@@ -6,13 +6,13 @@
  * Time: 21:41
  */
 
-namespace DGHelper;
+namespace Dima;
 
 
-class TestHelper
+class Test
 {
-    public static function help()
+    public static function output($str)
     {
-        print "Helping\n";
+        print "$str\n";
     }
 } 
