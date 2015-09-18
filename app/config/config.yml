@@ -1,0 +1,6 @@
+edmunds_api:
+    key: 9kkxp9y5mwj6rtycgpud4cmy
+    secret: rXSuDbqxf5SR8GtfnhNHZhyr
+
+    loader_options:
+        models_cache_count: 11

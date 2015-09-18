@@ -19,4 +19,12 @@ class HomeController
     {
         return new Response('Hello!');
     }
+
+    public function xmlAction()
+    {
+        $response = new Response();
+        $response->headers->set('Content-Type', 'application/xml');
+        $response->setContent('<Test><Message>Hello!</Message></Test>');
+        return $response;
+    }
 } 
