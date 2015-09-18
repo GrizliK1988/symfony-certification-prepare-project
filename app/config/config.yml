@@ -1,6 +1,27 @@
-edmunds_api:
-    key: 9kkxp9y5mwj6rtycgpud4cmy
-    secret: rXSuDbqxf5SR8GtfnhNHZhyr
+debug: true
+key: 9kkxp9y5mwj6rtycgpud4cmy
+secret: rXSuDbqxf5SR8GtfnhNHZhyr
 
-    loader_options:
-        models_cache_count: 11
+settings:
+    cache:
+        makes:
+            enabled: true
+            count: 10
+            restrictedNames: ['Acura', 'Volvo']
+        ratings_reviews:
+            enabled: true
+            count: 100
+            sortby: created
+            minAvgRating: 0
+            maxAvgRating: 4.99
+            filters:
+                -
+                    type: 'PERFORMANCE'
+                    min: 3
+                    max: 5
+                -
+                    type: 'COMFORT'
+                    min: 2
+                -
+                    type: 'FUEL_ECONOMY'
+                    max: 5

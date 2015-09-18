@@ -7,11 +7,12 @@
  */
 
 namespace {
+    use DG\SymfonyCert\AppConfiguration;
     use DG\SymfonyCert\Command\ModelsCacheCommand;
     use DG\SymfonyCert\Service\ConfigBag;
     use DG\SymfonyCert\Service\FileLoader\YamlConfigLoader;
-    use DG\SymfonyCert\Service\FileLoader\XmlConfigLoader;
     use Symfony\Component\Config\ConfigCache;
+    use Symfony\Component\Config\Definition\Processor;
     use Symfony\Component\Config\FileLocator;
     use Symfony\Component\Config\Loader\DelegatingLoader;
     use Symfony\Component\Config\Loader\LoaderResolver;
@@ -22,34 +23,33 @@ namespace {
 
     $configCachePath = __DIR__ . '/app/cache/appConfigCache.php';
     $configCache = new ConfigCache($configCachePath, true);
-    $configuration = new ConfigBag();
+    $configBag = new ConfigBag(['configs' => []]);
 
     if (!$configCache->isFresh()) {
 
         $locator = new FileLocator([__DIR__ . '/app/config']);
-        $yamlLoader = new YamlConfigLoader($configuration, $locator);
-        $xmlLoader = new XmlConfigLoader($configuration, $locator);
+        $yamlLoader = new YamlConfigLoader($configBag, $locator);
 
-        $loaderResolver = new LoaderResolver([$yamlLoader, $xmlLoader]);
-
+        $loaderResolver = new LoaderResolver([$yamlLoader]);
         $delegatingLoader = new DelegatingLoader($loaderResolver);
         $delegatingLoader->load('config.yml');
-        $delegatingLoader->load('config.xml');
+        $delegatingLoader->load('config_extra.yml');
 
         $resources = [
             new FileResource($locator->locate('config.yml', null, true)),
-            new FileResource($locator->locate('config.xml', null, true)),
         ];
-        $code = $configuration->all();
 
-        $configCache->write(json_encode($code), $resources);
+        $processor = new Processor();
+        $configuration = new AppConfiguration();
+        $processedConfig = $processor->processConfiguration($configuration, $configBag->get('configs'));
+
+        $configCache->write(json_encode($processedConfig), $resources);
     } else {
         $path = $configCache->getPath();
-        $config = json_decode(file_get_contents($path), true);
-        $configuration->reset($config);
+        $processedConfig = json_decode(file_get_contents($path), true);
     }
 
     $app = new Application();
-    $app->add(new ModelsCacheCommand());
+    $app->add(new ModelsCacheCommand($processedConfig));
     $app->run();
 }
