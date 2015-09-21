@@ -7,9 +7,16 @@
  */
 
 namespace {
-    use DG\SymfonyCert\Command\ModelsCacheCommand;
+    use DG\SymfonyCert\Command\MakesCacheCommand;
+    use DG\SymfonyCert\Command\MakesCacheReportCommand;
     use DG\SymfonyCert\Service\EdmundsApi\MakesService;
     use Symfony\Component\Console\Application;
+    use Symfony\Component\Console\ConsoleEvents;
+    use Symfony\Component\Console\Event\ConsoleCommandEvent;
+    use Symfony\Component\Console\Event\ConsoleExceptionEvent;
+    use Symfony\Component\Console\Event\ConsoleTerminateEvent;
+    use Symfony\Component\EventDispatcher\EventDispatcher;
+    use Symfony\Component\Finder\Finder;
 
     require __DIR__ . '/app/autoload.php';
     require __DIR__ . '/app/loadConfig.php';
@@ -20,7 +27,37 @@ namespace {
 
     $config = DG\App\loadConfig();
 
+    $eventDispatcher = new EventDispatcher();
+
     $app = new Application();
-    $app->add(new ModelsCacheCommand(new MakesService($config['api'], $config['key'])));
+    $app->add(new MakesCacheCommand(new MakesService($config['api'], $config['key'])));
+    $app->add($reportCommand = new MakesCacheReportCommand());
+
+    $app->setDefaultCommand($reportCommand->getName());
+    $app->setDispatcher($eventDispatcher);
+
+    $eventDispatcher->addListener(ConsoleEvents::COMMAND, function(ConsoleCommandEvent $event) use ($reportCommand) {
+        $output = $event->getOutput();
+        $output->writeln("<info>Run command " . $event->getCommand()->getName() . "</info>");
+
+        $finder = new Finder();
+        $makesCacheFilesCount = $finder->in(CACHE_PATH)->name('makes*.json')->count();
+
+        if ($makesCacheFilesCount === 0 && $event->getCommand()->getName() === $reportCommand->getName()) {
+            $output->writeln("<error>There is no cache files. Command execution stopped</error>");
+            $event->disableCommand();
+        }
+    });
+
+    $eventDispatcher->addListener(ConsoleEvents::TERMINATE, function(ConsoleTerminateEvent $event) {
+        $output = $event->getOutput();
+
+        $output->writeln("<info>" . $event->getCommand()->getName() . " execution stopped</info>");
+    });
+
+    $eventDispatcher->addListener(ConsoleEvents::EXCEPTION, function(ConsoleExceptionEvent $event) {
+        //wrap exception
+    });
+
     $app->run();
 }
