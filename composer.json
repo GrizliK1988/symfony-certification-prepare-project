@@ -11,6 +11,7 @@
         "symfony/finder": "^2.7",
         "psr/log": "^1.0",
         "symfony/process": "^2.7",
-        "symfony/debug": "^2.7"
+        "symfony/debug": "^2.7",
+        "symfony/css-selector": "^2.7"
     }
 }

@@ -7,6 +7,7 @@
  */
 
 namespace {
+    use DG\SymfonyCert\Command\CssSelectorTestCommand;
     use DG\SymfonyCert\Command\MakesCacheCommand;
     use DG\SymfonyCert\Command\MakesCacheReportCommand;
     use DG\SymfonyCert\Service\EdmundsApi\MakesService;
@@ -15,6 +16,7 @@ namespace {
     use Symfony\Component\Console\Event\ConsoleCommandEvent;
     use Symfony\Component\Console\Event\ConsoleExceptionEvent;
     use Symfony\Component\Console\Event\ConsoleTerminateEvent;
+    use Symfony\Component\Debug\Debug;
     use Symfony\Component\EventDispatcher\EventDispatcher;
     use Symfony\Component\Finder\Finder;
 
@@ -25,12 +27,15 @@ namespace {
     const CACHE_PATH = ROOT_PATH  . 'app/cache/';
     const CONFIG_PATH = ROOT_PATH  . 'app/config/';
 
+    Debug::enable(E_ALL, true);
+
     $config = DG\App\loadConfig();
 
     $eventDispatcher = new EventDispatcher();
 
     $app = new Application();
     $app->add(new MakesCacheCommand(new MakesService($config['api'], $config['key'])));
+    $app->add(new CssSelectorTestCommand());
     $app->add($reportCommand = new MakesCacheReportCommand());
 
     $app->setDefaultCommand($reportCommand->getName());
