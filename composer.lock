@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "61232ed6040ba4521740d5d72ab1ff60",
+    "hash": "dc0f1deaa23a20d2afc2e4faedc7a459",
     "packages": [
         {
             "name": "guzzle/guzzle",
@@ -799,6 +799,59 @@
             "description": "Symfony DependencyInjection Component",
             "homepage": "https://symfony.com",
             "time": "2015-08-24 07:16:32"
+        },
+        {
+            "name": "symfony/dom-crawler",
+            "version": "v2.7.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/dom-crawler.git",
+                "reference": "2e185ca136399f902b948694987e62c80099c052"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/dom-crawler/zipball/2e185ca136399f902b948694987e62c80099c052",
+                "reference": "2e185ca136399f902b948694987e62c80099c052",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.9"
+            },
+            "require-dev": {
+                "symfony/css-selector": "~2.3",
+                "symfony/phpunit-bridge": "~2.7"
+            },
+            "suggest": {
+                "symfony/css-selector": ""
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.7-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\DomCrawler\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony DomCrawler Component",
+            "homepage": "https://symfony.com",
+            "time": "2015-09-20 21:13:58"
         },
         {
             "name": "symfony/event-dispatcher",

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root xmlns="http://www.w3.org/2005/Atom">
+    <entry>
+        <node>Test 1</node>
+        <node1>Test 11</node1>
+        <node2>Test 12</node2>
+    </entry>
+    <entry>
+        <node>Test 2</node>
+        <node1>Test 2</node1>
+    </entry>
+    <entry>
+        <node>Test 3</node>
+        <node1>Test 3</node1>
+    </entry>
+</root>
