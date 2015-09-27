@@ -11,6 +11,9 @@ namespace {
     use DG\SymfonyCert\Command\MakesCacheCommand;
     use DG\SymfonyCert\Command\MakesCacheReportCommand;
     use DG\SymfonyCert\Service\EdmundsApi\MakesService;
+    use DG\SymfonyCert\Service\Serializer\DelegatingSerializer;
+    use DG\SymfonyCert\Service\Serializer\JsonToArraySerializer;
+    use DG\SymfonyCert\Service\Serializer\JsonToStdClassSerializer;
     use Symfony\Component\Console\Application;
     use Symfony\Component\Console\ConsoleEvents;
     use Symfony\Component\Console\Event\ConsoleCommandEvent;
@@ -34,7 +37,12 @@ namespace {
     $eventDispatcher = new EventDispatcher();
 
     $app = new Application();
-    $app->add(new MakesCacheCommand(new MakesService($config['api'], $config['key'])));
+
+    $serializer = new DelegatingSerializer();
+    $serializer->addSerializer(new JsonToStdClassSerializer(), 'json_to_stdClass');
+    $serializer->addSerializer(new JsonToArraySerializer(), 'json_to_array');
+
+    $app->add(new MakesCacheCommand(new MakesService($config['api'], $config['key'], $serializer)));
     $app->add(new CssSelectorTestCommand());
     $app->add($reportCommand = new MakesCacheReportCommand());
 
