@@ -1,6 +1,7 @@
 debug: true
 api: https://api.edmunds.com/api/vehicle/v2/
 key: 9kkxp9y5mwj6rtycgpud4cmy
+other_keys: [9kkxp9y5mwj6rtycgpud4cmy]
 secret: rXSuDbqxf5SR8GtfnhNHZhyr
 
 settings:

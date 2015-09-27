@@ -96,7 +96,7 @@ class MakesCacheCommand extends Command
             $input->getArgument('year'),
             $input->getArgument('view')
         );
-        $makes = json_decode($makesJson, true);
+        $makes = $makesJson;
 
         $makes['makes'] = array_values(array_filter($makes['makes'], function (array $make) use ($input, &$makes) {
             $ok = !in_array($make['name'], $input->getOption('exclude-brand'));

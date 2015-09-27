@@ -1,0 +1,73 @@
+#imports:
+#    - { resource: services.xml }
+
+parameters:
+    delegating_serializer.class: DG\SymfonyCert\Service\Serializer\DelegatingSerializer
+    array_logger.class: DG\SymfonyCert\Service\Logger\ArrayLogger
+    api.makes.class: DG\SymfonyCert\Service\EdmundsApi\MakesService
+    api.makes.factory.class: DG\SymfonyCert\Service\EdmundsApi\MakesServiceFactory
+
+    json_to_array.serializer.class: DG\SymfonyCert\Service\Serializer\JsonToArraySerializer
+    json_to_stdClass.serializer.class: DG\SymfonyCert\Service\Serializer\JsonToArraySerializer
+
+    test.percent.param: "string%%with%%percent"
+    array_parameter:
+        - 1
+        - 2
+        - 3
+    nested_array_parameter:
+        - a:
+            - 1
+            - 2
+        - b:
+            - 1
+            - 2
+
+services:
+    delegating_serializer:
+        lazy: true
+        class: %delegating_serializer.class%
+
+    json_to_array.serializer:
+        class: %json_to_array.serializer.class%
+        tags:
+            - {name: serializer, format: 'json_to_array'}
+
+    json_to_stdClass.serializer:
+        class: %json_to_stdClass.serializer.class%
+        tags:
+            - {name: serializer, format: 'json_to_stdClass'}
+
+    array_logger:
+        class: %array_logger.class%
+
+    api.base:
+        abstract: true
+        class: DG\SymfonyCert\Service\EdmundsApi\BaseApiService
+        configurator: [@log.conf, configure]
+
+    api.makes.factory:
+        class: %api.makes.factory.class%
+
+    api.makes:
+        public: true
+        class: %api.makes.class%
+        parent: api.base
+        factory: [@api.makes.factory, createService]
+        arguments: [%api.endpoint%, %api.key%, @delegating_serializer]
+
+#    api.makes.decorator:
+#        public: false
+#        class: %api.makes.class%
+#        parent: api.base
+#        decorates: api.makes
+#        decoration_inner_name: api.makes.wooz
+#        arguments: [%api.endpoint%, %api.key%, @delegating_serializer, @api.makes.decorator.inner]
+
+    logger.configurator:
+        public: false
+        class: DG\SymfonyCert\Service\EdmundsApi\LoggerConfigurator
+        arguments: [@array_logger]
+
+    log.conf:
+        alias: logger.configurator

@@ -12,6 +12,8 @@
         "psr/log": "^1.0",
         "symfony/process": "^2.7",
         "symfony/debug": "^2.7",
-        "symfony/css-selector": "^2.7"
+        "symfony/css-selector": "^2.7",
+        "symfony/dependency-injection": "^2.7",
+        "symfony/proxy-manager-bridge": "~2.3"
     }
 }

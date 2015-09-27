@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="delegating_serializer.class">DG\SymfonyCert\Service\Serializer\DelegatingSerializer</parameter>
+        <parameter key="array_logger.class">DG\SymfonyCert\Service\Logger\ArrayLogger</parameter>
+        <parameter key="array_parameter" type="collection">
+            <parameter>1</parameter>
+            <parameter>2</parameter>
+            <parameter>3</parameter>
+        </parameter>
+        <parameter key="nested_array_parameter" type="collection">
+            <parameter key="a" type="collection">
+                <parameter>1</parameter>
+                <parameter>2</parameter>
+            </parameter>
+            <parameter key="b" type="collection">
+                <parameter>1</parameter>
+                <parameter>2</parameter>
+            </parameter>
+        </parameter>
+
+        <parameter key="api.makes.service.name" type="constant">DG\SymfonyCert\Service\EdmundsApi\MakesService::DIC_SERVICE</parameter>
+        <parameter key="api.makes.service.class" type="constant">DG\SymfonyCert\Service\EdmundsApi\MakesService::DIC_CLASS</parameter>
+    </parameters>
+
+    <services>
+        <service id="api.makes" class="%api.makes.service.class%">
+            <argument>%api.endpoint%</argument>
+            <argument>%api.key%</argument>
+            <argument type="service" id="delegating_serializer" />
+            <call method="setLogger">
+                <argument type="service" id="array_logger" />
+            </call>
+        </service>
+
+        <service id="delegating_serializer" class="%delegating_serializer.class%">
+        </service>
+
+        <service id="array_logger" class="%array_logger.class%">
+        </service>
+    </services>
+
+</container>
