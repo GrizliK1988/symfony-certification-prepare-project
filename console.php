@@ -10,6 +10,7 @@ namespace {
     use DG\SymfonyCert\Command\CssSelectorTestCommand;
     use DG\SymfonyCert\Command\DomCrawlerHHTestCommand;
     use DG\SymfonyCert\Command\DomCrawlerTestCommand;
+    use DG\SymfonyCert\Command\ExpressionLanguageCommand;
     use DG\SymfonyCert\Command\MakesCacheCommand;
     use DG\SymfonyCert\Command\MakesCacheReportCommand;
     use DG\SymfonyCert\Service\ServiceCallsStatisticsReporter;
@@ -38,6 +39,7 @@ namespace {
     $app->add($reportCommand = new MakesCacheReportCommand());
     $app->add(new DomCrawlerTestCommand());
     $app->add(new DomCrawlerHHTestCommand());
+    $app->add(new ExpressionLanguageCommand());
 
     $app->setDefaultCommand($reportCommand->getName());
     $app->setDispatcher($eventDispatcher);
