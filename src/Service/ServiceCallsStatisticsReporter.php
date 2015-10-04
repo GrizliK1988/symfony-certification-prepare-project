@@ -10,20 +10,17 @@ namespace DG\SymfonyCert\Service;
 
 
 use DG\SymfonyCert\Event\ApiCallEvent;
+use Symfony\Component\Console\ConsoleEvents;
+use Symfony\Component\Console\Event\ConsoleEvent;
+use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\Debug\TraceableEventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
-class ServiceCallsStatistics implements EventSubscriberInterface
+class ServiceCallsStatisticsReporter implements EventSubscriberInterface
 {
-    private static $calls = null;
-
-    public function __construct()
-    {
-        self::$calls = [];
-    }
-
     /**
      * Returns an array of event names this subscriber wants to listen to.
      *
@@ -47,22 +44,35 @@ class ServiceCallsStatistics implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            ApiCallEvent::EVENT_NAME => [
-                ['add', 10]
+            ConsoleEvents::TERMINATE => [
+                ['report', 10]
             ]
         ];
     }
 
-    public function add(GenericEvent $event, $eventName, EventDispatcherInterface $dispatcher)
+    public function report(ConsoleEvent $event, $eventName, EventDispatcherInterface $dispatcher)
     {
-        self::$calls[] = [
-            get_class($event->getSubject()),
-            $event->getArguments()
-        ];
-    }
+        $output = $event->getOutput();
 
-    public static function getCalls()
-    {
-        return self::$calls;
+        if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
+            $stat = ServiceCallsStatistics::getCalls();
+            $tableFormatter = new Table($output);
+
+            $tableFormatter->setHeaders(['Class Name', 'Api Path', 'Parameters']);
+            foreach ($stat as $row) {
+                $tableFormatter->addRow([
+                    $row[0],
+                    $row[0]::API_METHOD,
+                    json_encode($row[1])
+                ]);
+            }
+            $tableFormatter->render();
+
+            if ($dispatcher instanceof TraceableEventDispatcher) {
+                print_r($dispatcher->getCalledListeners());
+            }
+        }
+
+        $event->stopPropagation();
     }
-} 
+}

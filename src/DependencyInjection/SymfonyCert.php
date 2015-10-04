@@ -9,20 +9,22 @@
 namespace DG\SymfonyCert\DependencyInjection;
 
 
-use DG\SymfonyCert\DependencyInjection\Compiler\AddStatCompilerPass;
+use DG\SymfonyCert\DependencyInjection\Compiler\AddEventDispatcherCompilerPass;
 use DG\SymfonyCert\DependencyInjection\Compiler\RegisterSerializersCompilerPass;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\EventDispatcher\DependencyInjection\RegisterListenersPass;
 
 class SymfonyCert
 {
     public function createContainerFromYamlConfig($config)
     {
         $containerBuilder = new ContainerBuilder();
-        $containerBuilder->addCompilerPass(new AddStatCompilerPass());
         $containerBuilder->addCompilerPass(new RegisterSerializersCompilerPass());
+        $containerBuilder->addCompilerPass(new AddEventDispatcherCompilerPass());
+        $containerBuilder->addCompilerPass(new RegisterListenersPass());
         $containerBuilder->registerExtension(new SymfonyCertDIExtension());
 
         $xmlLoader = new XmlFileLoader($containerBuilder, new FileLocator(__DIR__ . '/../../app/config'));

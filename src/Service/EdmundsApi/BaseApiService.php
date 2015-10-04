@@ -9,8 +9,8 @@
 namespace DG\SymfonyCert\Service\EdmundsApi;
 
 
-use DG\SymfonyCert\Service\ServiceCallsStatistics;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 abstract class BaseApiService implements LoggedServiceInterface
 {
@@ -20,17 +20,22 @@ abstract class BaseApiService implements LoggedServiceInterface
     protected $logger;
 
     /**
-     * @var ServiceCallsStatistics
+     * @var EventDispatcherInterface
      */
-    protected $statService;
+    protected $dispatcher;
 
     public function setLogger(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
 
-    public function setStatService(ServiceCallsStatistics $statistics)
+    public function getDispatcher()
     {
-        $this->statService = $statistics;
+        return $this->dispatcher;
+    }
+
+    public function setDispatcher(EventDispatcherInterface $dispatcher)
+    {
+        $this->dispatcher = $dispatcher;
     }
 }

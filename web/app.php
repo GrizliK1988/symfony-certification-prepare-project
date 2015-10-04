@@ -8,56 +8,36 @@
 
 namespace {
     use DG\SymfonyCert\DependencyInjection\SymfonyCert;
-    use DG\SymfonyCert\Service\Logger\ArrayLogger;
-    use DG\SymfonyCert\Service\EdmundsApi\MakesService;
     use DG\SymfonyCert\Service\ServiceCallsStatistics;
+    use Symfony\Component\Asset\Context\RequestStackContext;
+    use Symfony\Component\Asset\PathPackage;
+    use Symfony\Component\Asset\VersionStrategy\StaticVersionStrategy;
     use Symfony\Component\Config\ConfigCache;
     use Symfony\Component\Debug\Debug;
     use Symfony\Component\DependencyInjection\Dumper\PhpDumper;
+    use Symfony\Component\HttpFoundation\Request;
+    use Symfony\Component\HttpFoundation\RequestStack;
+    use Symfony\Component\Templating\Loader\FilesystemLoader;
+    use Symfony\Component\Templating\PhpEngine;
+    use Symfony\Component\Templating\TemplateNameParser;
 
     require_once __DIR__ . '/../app/autoload.php';
+    require __DIR__ . '/../app/constants.php';
     require __DIR__ . '/../app/loadConfig.php';
-
-    const ROOT_PATH = __DIR__ . '/../';
-    const CACHE_PATH = ROOT_PATH  . 'app/cache/';
-    const CONFIG_PATH = ROOT_PATH  . 'app/config/';
-    const SRC_PATH = ROOT_PATH  . 'src/';
+    require __DIR__ . '/../app/loadContainer.php';
 
     Debug::enable();
+    $container = \DG\App\loadContainer();
 
-    $cacheFile = CACHE_PATH . 'appContainerCache.php';
-    $containerCache = new ConfigCache($cacheFile, true);
+    $requestStack = new RequestStack();
+    $requestStack->push(Request::createFromGlobals());
+    $requestContext = new RequestStackContext($requestStack);
 
-    if (!$containerCache->isFresh()) {
-        $di = new SymfonyCert();
-        $containerBuilder = $di->createContainerFromYamlConfig(DG\App\loadConfig());
-        $containerBuilder->compile();
+    $loader = new FilesystemLoader(SRC_PATH . 'Resources/views/%name%');
+    $templating = new PhpEngine(new TemplateNameParser(), $loader);
 
-        $dumper = new PhpDumper($containerBuilder);
-        $containerCache->write($dumper->dump([
-            'class' => 'AppServiceContainer'
-        ]), $containerBuilder->getResources());
-    }
+    $assetJsLoader = new PathPackage('/js/', new StaticVersionStrategy('v2', '%1$s?%2$s'), $requestContext);
+    $templating->addGlobal('JsAssets', $assetJsLoader);
 
-    require_once $containerCache->getPath();
-    $container = new AppServiceContainer();
-
-    $stat = new ServiceCallsStatistics();
-    $stat->initCalls();
-    $container->set('service.stat.calls', $stat);
-
-    /** @var MakesService $makesService */
-    $makesService = $container->get('api.makes');
-    $makes = $makesService->getMakes('used', 2015);
-
-    /** @var ArrayLogger $arrayLoggerService */
-    $arrayLoggerService = $container->get('array_logger');
-
-    print '<pre>';
-
-    print_r($arrayLoggerService->getLogs());
-    print_r(ServiceCallsStatistics::getCalls());
-    print_r($makes);
-
-    print '</pre>';
+    echo $templating->render('hello.php', ['name' => 'Dima']);
 }

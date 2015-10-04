@@ -2,19 +2,19 @@
 /**
  * Created by PhpStorm.
  * User: dima
- * Date: 27.09.15
- * Time: 10:53
+ * Date: 30.09.15
+ * Time: 22:19
  */
 
 namespace DG\SymfonyCert\DependencyInjection\Compiler;
 
 
-use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
+use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Reference;
 
-class AddStatCompilerPass implements CompilerPassInterface
+class AddEventDispatcherCompilerPass implements CompilerPassInterface
 {
     /**
      * You can modify the container here before it is dumped to PHP code.
@@ -25,7 +25,8 @@ class AddStatCompilerPass implements CompilerPassInterface
      */
     public function process(ContainerBuilder $container)
     {
-        $loader = new PhpFileLoader($container, new FileLocator(__DIR__));
-        $loader->load('add_statistics.php');
+        $container->setDefinition('event_dispatcher',
+            new Definition('Symfony\Component\EventDispatcher\ContainerAwareEventDispatcher', [new Reference('service_container')])
+        );
     }
 }

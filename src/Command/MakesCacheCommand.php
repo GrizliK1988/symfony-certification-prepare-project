@@ -9,9 +9,13 @@
 namespace DG\SymfonyCert\Command;
 
 
+use DG\SymfonyCert\Event\ApiCallEvent;
+use DG\SymfonyCert\Event\MakesCacheEvent;
 use DG\SymfonyCert\Service\EdmundsApi\MakesService;
+use DG\SymfonyCert\Service\EdmundsApi\ModelsService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
+use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,17 +23,20 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\EventDispatcher\ContainerAwareEventDispatcher;
+use Symfony\Component\EventDispatcher\GenericEvent;
 
 class MakesCacheCommand extends Command
 {
     /**
-     * @var MakesService
+     * @var ContainerInterface
      */
-    private $makesService;
+    private $container;
 
-    public function __construct(MakesService $makesService)
+    public function __construct(ContainerInterface $container)
     {
-        $this->makesService = $makesService;
+        $this->container = $container;
         parent::__construct();
     }
 
@@ -87,11 +94,9 @@ class MakesCacheCommand extends Command
     {
         $cachePath = CACHE_PATH . sprintf('makes_%s_%s_%s.json', $input->getArgument('state'), $input->getArgument('year'), $input->getArgument('view'));
 
-        if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
-            $output->writeln('<fg=white;bg=black;options=blink>Hi!</>');
-        }
-
-        $makesJson = $this->makesService->getMakes(
+        /** @var MakesService $makesService */
+        $makesService = $this->container->get('api.makes');
+        $makesJson = $makesService->getMakes(
             $input->getArgument('state'),
             $input->getArgument('year'),
             $input->getArgument('view')
@@ -110,12 +115,19 @@ class MakesCacheCommand extends Command
 
         file_put_contents($cachePath, json_encode($makes, JSON_PRETTY_PRINT));
 
+        /** @var ContainerAwareEventDispatcher $dispatcher */
+        $dispatcher = $this->container->get('event_dispatcher.traceable');
+
+        $dispatcher->addListener(ApiCallEvent::EVENT_NAME, function (GenericEvent $event) use ($output) {
+            $output->writeln('<comment>Api call from ' . get_class($event->getSubject()) . '</comment>');
+        });
+
+        $dispatcher->dispatch(MakesService::EVENT_CACHE_COMPLETE,
+            new MakesCacheEvent($makes, $input->getArgument('state'), $input->getArgument('year'), $input->getArgument('view'))
+        );
+
         if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERY_VERBOSE) {
             $output->writeln('<info>Total count = ' . $makes['makesCount'] . '</info>');
-        }
-
-        if ($output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
-            $output->writeln('Performed!');
         }
     }
 }

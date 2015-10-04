@@ -7,21 +7,12 @@ parameters:
     api.makes.class: DG\SymfonyCert\Service\EdmundsApi\MakesService
     api.makes.factory.class: DG\SymfonyCert\Service\EdmundsApi\MakesServiceFactory
 
+    api.models.class: DG\SymfonyCert\Service\EdmundsApi\ModelsService
+
+    api.calls.statistics.class: DG\SymfonyCert\Service\ServiceCallsStatistics
+
     json_to_array.serializer.class: DG\SymfonyCert\Service\Serializer\JsonToArraySerializer
     json_to_stdClass.serializer.class: DG\SymfonyCert\Service\Serializer\JsonToArraySerializer
-
-    test.percent.param: "string%%with%%percent"
-    array_parameter:
-        - 1
-        - 2
-        - 3
-    nested_array_parameter:
-        - a:
-            - 1
-            - 2
-        - b:
-            - 1
-            - 2
 
 services:
     delegating_serializer:
@@ -44,25 +35,30 @@ services:
     api.base:
         abstract: true
         class: DG\SymfonyCert\Service\EdmundsApi\BaseApiService
-        configurator: [@log.conf, configure]
-
-    api.makes.factory:
-        class: %api.makes.factory.class%
+        configurator: [DG\SymfonyCert\Service\ApiServiceConfigurator, configure]
+        calls:
+            - [setLogger, [@array_logger]]
+            - [setDispatcher, [@event_dispatcher.traceable]]
 
     api.makes:
         public: true
         class: %api.makes.class%
         parent: api.base
-        factory: [@api.makes.factory, createService]
         arguments: [%api.endpoint%, %api.key%, @delegating_serializer]
 
-#    api.makes.decorator:
-#        public: false
-#        class: %api.makes.class%
-#        parent: api.base
-#        decorates: api.makes
-#        decoration_inner_name: api.makes.wooz
-#        arguments: [%api.endpoint%, %api.key%, @delegating_serializer, @api.makes.decorator.inner]
+    api.models:
+        class: %api.models.class%
+        parent: api.base
+        arguments: [%api.endpoint%, %api.key%, @delegating_serializer]
+        calls:
+            - [setDispatcher, [@event_dispatcher]]
+        tags:
+            - {name: kernel.event_listener, event: makes.cache.complete, method: onMakesCache}
+
+    api.calls.statistics:
+        class: %api.calls.statistics.class%
+        tags:
+            - {name: kernel.event_subscriber}
 
     logger.configurator:
         public: false
@@ -71,3 +67,11 @@ services:
 
     log.conf:
         alias: logger.configurator
+
+    event_dispatcher.traceable:
+        class: Symfony\Component\EventDispatcher\Debug\TraceableEventDispatcher
+        factory: [@event_dispatcher.traceable.factory, create]
+
+    event_dispatcher.traceable.factory:
+        class: DG\SymfonyCert\Service\TraceableEventDispatcherFactory
+        arguments: [@event_dispatcher]

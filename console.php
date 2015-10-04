@@ -12,39 +12,28 @@ namespace {
     use DG\SymfonyCert\Command\DomCrawlerTestCommand;
     use DG\SymfonyCert\Command\MakesCacheCommand;
     use DG\SymfonyCert\Command\MakesCacheReportCommand;
-    use DG\SymfonyCert\Service\EdmundsApi\MakesService;
-    use DG\SymfonyCert\Service\Serializer\DelegatingSerializer;
-    use DG\SymfonyCert\Service\Serializer\JsonToArraySerializer;
-    use DG\SymfonyCert\Service\Serializer\JsonToStdClassSerializer;
+    use DG\SymfonyCert\Service\ServiceCallsStatisticsReporter;
     use Symfony\Component\Console\Application;
     use Symfony\Component\Console\ConsoleEvents;
     use Symfony\Component\Console\Event\ConsoleCommandEvent;
     use Symfony\Component\Console\Event\ConsoleExceptionEvent;
-    use Symfony\Component\Console\Event\ConsoleTerminateEvent;
     use Symfony\Component\Debug\Debug;
     use Symfony\Component\EventDispatcher\EventDispatcher;
     use Symfony\Component\Finder\Finder;
 
     require __DIR__ . '/app/autoload.php';
     require __DIR__ . '/app/loadConfig.php';
-
-    const ROOT_PATH = __DIR__ . '/';
-    const CACHE_PATH = ROOT_PATH  . 'app/cache/';
-    const CONFIG_PATH = ROOT_PATH  . 'app/config/';
+    require __DIR__ . '/app/loadContainer.php';
 
     Debug::enable(E_ALL, true);
 
-    $config = DG\App\loadConfig();
+    $container = \DG\App\loadContainer();
 
-    $eventDispatcher = new EventDispatcher();
+    $eventDispatcher = $container->get('event_dispatcher.traceable');
 
     $app = new Application();
 
-    $serializer = new DelegatingSerializer();
-    $serializer->addSerializer(new JsonToStdClassSerializer(), 'json_to_stdClass');
-    $serializer->addSerializer(new JsonToArraySerializer(), 'json_to_array');
-
-    $app->add(new MakesCacheCommand(new MakesService($config['api'], $config['key'], $serializer)));
+    $app->add(new MakesCacheCommand($container));
     $app->add(new CssSelectorTestCommand());
     $app->add($reportCommand = new MakesCacheReportCommand());
     $app->add(new DomCrawlerTestCommand());
@@ -57,24 +46,22 @@ namespace {
         $output = $event->getOutput();
         $output->writeln("<info>Run command " . $event->getCommand()->getName() . "</info>");
 
-        $finder = new Finder();
-        $makesCacheFilesCount = $finder->in(CACHE_PATH)->name('makes*.json')->count();
+        if ($event->getCommand() instanceof MakesCacheReportCommand) {
+            $finder = new Finder();
+            $makesCacheFilesCount = $finder->in(CACHE_PATH)->name('makes*.json')->count();
 
-        if ($makesCacheFilesCount === 0 && $event->getCommand()->getName() === $reportCommand->getName()) {
-            $output->writeln("<error>There is no cache files. Command execution stopped</error>");
-            $event->disableCommand();
+            if ($makesCacheFilesCount === 0 && $event->getCommand()->getName() === $reportCommand->getName()) {
+                $output->writeln("<error>There is no cache files. Command execution stopped</error>");
+                $event->disableCommand();
+            }
         }
-    });
-
-    $eventDispatcher->addListener(ConsoleEvents::TERMINATE, function(ConsoleTerminateEvent $event) {
-        $output = $event->getOutput();
-
-        $output->writeln("<info>" . $event->getCommand()->getName() . " execution stopped</info>");
     });
 
     $eventDispatcher->addListener(ConsoleEvents::EXCEPTION, function(ConsoleExceptionEvent $event) {
         //wrap exception
     });
+
+    $eventDispatcher->addSubscriber(new ServiceCallsStatisticsReporter());
 
     $app->run();
 }

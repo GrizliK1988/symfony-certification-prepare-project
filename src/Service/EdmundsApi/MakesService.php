@@ -9,16 +9,17 @@
 namespace DG\SymfonyCert\Service\EdmundsApi;
 
 
+use DG\SymfonyCert\Event\ApiCallEvent;
 use DG\SymfonyCert\Service\Serializer\DelegatingSerializer;
 use GuzzleHttp;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LogLevel;
+use Symfony\Component\EventDispatcher\GenericEvent;
 
 class MakesService extends BaseApiService
 {
+    const EVENT_CACHE_COMPLETE = 'makes.cache.complete';
     const DIC_SERVICE = 'api.makes';
-    const DIC_CLASS = __CLASS__;
-
     const API_METHOD = 'makes';
 
     /**
@@ -45,9 +46,6 @@ class MakesService extends BaseApiService
 
     public function getMakes($state, $year, $view = 'full')
     {
-        if ($this->statService)
-            $this->statService->add(static::DIC_SERVICE, $state, $year, $view);
-
         $client = new GuzzleHttp\Client();
 
         $query = GuzzleHttp\Psr7\build_query([
@@ -63,6 +61,9 @@ class MakesService extends BaseApiService
 
         if ($this->logger)
             $this->logger->log(LogLevel::INFO, sprintf('Makes response : %s', $result->getBody()));
+
+        if ($this->dispatcher)
+            $this->dispatcher->dispatch(ApiCallEvent::EVENT_NAME, new GenericEvent($this, ['state' => $state, 'year' => $year, 'view' => $view]));
 
         return $this->delegatingSerializer->deserialize((string)$result->getBody(), 'json', ['type' => 'array']);
     }
