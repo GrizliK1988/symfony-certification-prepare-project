@@ -17,6 +17,9 @@ use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Form\Extension\Csrf\CsrfExtension;
 use Symfony\Component\Form\Extension\HttpFoundation\HttpFoundationExtension;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
+use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\Forms;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -61,17 +64,58 @@ class CrudController extends Controller
             $form->handleRequest($request);
             if ($form->isSubmitted() && $form->isValid()) {
                 /** @var UploadedFile $photo */
-                $photo = $form->getData()['photo'];
-                $photo->move(IMAGES_PATH, $photo->getClientOriginalName());
-
+                $photo = $form->getData()->photo;
                 $data = $form->getData();
-                $data['photo'] = $photo->getClientOriginalName();
+                if ($photo) {
+                    $photo->move(IMAGES_PATH, $photo->getClientOriginalName());
+                    $data->photo = $photo->getClientOriginalName();
+                }
 
                 $fs = new Filesystem();
                 $fs->dumpFile(STORAGE_PATH . uniqid() . '.json', json_encode($data, JSON_PRETTY_PRINT));
 
                 return new RedirectResponse('/app.php/crud/view');
             }
+        }
+
+        $response = new Response();
+        $response->setContent($this->getTwig()->render('crud/add.html.twig', [
+            'form' => $form->createView()
+        ]));
+        return $response;
+    }
+
+    public function editAction(Request $request)
+    {
+        $id = $request->query->get('id');
+        $userJson = file_get_contents(STORAGE_PATH . $id . '.json');
+        $data = json_decode($userJson, true);
+
+        $userClass = new UserDataClass();
+        $userClass->username = $data['username'];
+        $userClass->email = $data['email'];
+        $userClass->dob = new \DateTime($data['dob']['date']);
+        $userClass->active = $data['active'];
+        $userClass->age = isset($data['age']) ? $data['age'] : 0;
+        $userClass->id = $id;
+
+        $form = $this->createForm('edit?id=' . $id, $userClass);
+        if ($request->isMethod('POST') && $form->handleRequest($request) && $form->isValid()) {
+            $data = $form->getData();
+            if ($data->photo) {
+                $data->photo->move(IMAGES_PATH, $data->photo->getClientOriginalName());
+                $data->photo = $data->photo->getClientOriginalName();
+            }
+
+            $prevData = json_decode(file_get_contents(STORAGE_PATH . $id . '.json'), true);
+            if ($prevData['photo'] && empty($data->photo)) {
+                $data->photo = $prevData['photo'];
+            }
+
+            $fs = new Filesystem();
+            $fs->dumpFile(STORAGE_PATH . $id . '.json', json_encode($data, JSON_PRETTY_PRINT));
+
+            return new RedirectResponse('/app.php/crud/view');
         }
 
         $response = new Response();
@@ -115,18 +159,51 @@ class CrudController extends Controller
             ->add('username', null, ['constraints' => [
                 new NotBlank()
             ]])
-            ->add('dob', 'birthday', ['label' => 'Date of birth'])
-            ->add('email', 'email', ['required' => true, 'constraints' => [
+            ->add('dob', null, ['label' => 'Date of birth'])
+            ->add('age')
+            ->add('email', null, ['constraints' => [
                 new NotBlank(),
                 new Email(),
             ]])
-            ->add('photo', 'file', ['required' => true])
-            ->add('active', 'checkbox')
+            ->add('photo')
+            ->add('active')
             ->add('Save', 'submit', [
                 'attr' => [
                     'class' => 'btn btn-primary'
                 ]
             ])
+            ->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $formEvent) {
+                /** @var UserDataClass $data */
+                $data = $formEvent->getData();
+                if ($data->username && $data->email) {
+                    $data->active = true;
+                    $formEvent->setData($data);
+                }
+
+                $now = new \DateTime();
+                $dob = $data->dob;
+                $diff = $now->diff($dob);
+
+                $data->age = $diff->y;
+            })
+            ->addEventListener(FormEvents::POST_SET_DATA, function (FormEvent $formEvent) {
+                //log model data
+            })
+            ->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $formEvent) {
+                $data = $formEvent->getData();
+                $data['email'] = strtoupper($data['email']);
+                $formEvent->setData($data);
+            })
+            ->addEventListener(FormEvents::SUBMIT, function (FormEvent $formEvent) {
+                $data = $formEvent->getData();
+                $data->username .= '!';
+                $formEvent->setData($data);
+            })
+            ->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $formEvent) {
+                $data = $formEvent->getData();
+
+                $formEvent->getForm()->get('username')->addError(new FormError('Test error!'));
+            })
             ->getForm();
 
         return $form;

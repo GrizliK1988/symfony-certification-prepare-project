@@ -14,12 +14,22 @@ class UserDataClass
     /**
      * @var string
      */
+    public $id;
+
+    /**
+     * @var string
+     */
     public $username;
 
     /**
      * @var \DateTime
      */
     public $dob;
+
+    /**
+     * @var integer
+     */
+    public $age;
 
     /**
      * @var string

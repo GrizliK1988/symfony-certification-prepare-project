@@ -29,10 +29,12 @@ class FormTypeGuesser implements FormTypeGuesserInterface
                 return new Guess\TypeGuess('text', [], Guess\Guess::HIGH_CONFIDENCE);
             case 'dob':
                 return new Guess\TypeGuess('birthday', [], Guess\Guess::VERY_HIGH_CONFIDENCE);
+            case 'age':
+                return new Guess\TypeGuess('integer', [], Guess\Guess::VERY_HIGH_CONFIDENCE);
             case 'active':
                 return new Guess\TypeGuess('checkbox', [], Guess\Guess::VERY_HIGH_CONFIDENCE);
             case 'photo':
-                return new Guess\TypeGuess('text', [], Guess\Guess::HIGH_CONFIDENCE);
+                return new Guess\TypeGuess('file', [], Guess\Guess::HIGH_CONFIDENCE);
             case 'email':
                 return new Guess\TypeGuess('email', [], Guess\Guess::VERY_HIGH_CONFIDENCE);
 
@@ -55,6 +57,8 @@ class FormTypeGuesser implements FormTypeGuesserInterface
             case 'username':
                 return new Guess\ValueGuess(true, Guess\Guess::HIGH_CONFIDENCE);
             case 'dob':
+                return new Guess\ValueGuess(false, Guess\Guess::HIGH_CONFIDENCE);
+            case 'age':
                 return new Guess\ValueGuess(false, Guess\Guess::HIGH_CONFIDENCE);
             case 'active':
                 return new Guess\ValueGuess(false, Guess\Guess::HIGH_CONFIDENCE);
