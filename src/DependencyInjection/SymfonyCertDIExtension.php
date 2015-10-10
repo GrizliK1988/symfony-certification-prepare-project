@@ -38,6 +38,10 @@ class SymfonyCertDIExtension implements ExtensionInterface, PrependExtensionInte
         $container->setParameter('api.endpoint', $resultConfig['api']);
         $container->setParameter('api.key', $resultConfig['key']);
 
+        $container->setParameter('root_path', ROOT_PATH);
+        $container->setParameter('images_path', IMAGES_PATH);
+        $container->setParameter('storage_path', STORAGE_PATH);
+
         $yamlServiceLoader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $yamlServiceLoader->load('services.yml');
     }

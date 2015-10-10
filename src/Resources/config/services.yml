@@ -1,5 +1,5 @@
 #imports:
-#    - { resource: services.xml }
+#    - { resource: /home/dima/Develop/symfony-certification-prepare-project/src/Resources/config/service_parameters.xml }
 
 parameters:
     delegating_serializer.class: DG\SymfonyCert\Service\Serializer\DelegatingSerializer
@@ -75,3 +75,10 @@ services:
     event_dispatcher.traceable.factory:
         class: DG\SymfonyCert\Service\TraceableEventDispatcherFactory
         arguments: [@event_dispatcher]
+
+    csrf_token.manager:
+        class: Symfony\Component\Security\Csrf\CsrfTokenManager
+
+    translator:
+        class: Symfony\Component\Translation\Translator
+        synthetic: true
