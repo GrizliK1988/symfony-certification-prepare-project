@@ -11,6 +11,7 @@ namespace {
     use DG\SymfonyCert\Command\DomCrawlerHHTestCommand;
     use DG\SymfonyCert\Command\DomCrawlerTestCommand;
     use DG\SymfonyCert\Command\ExpressionLanguageCommand;
+    use DG\SymfonyCert\Command\IntlTestCommand;
     use DG\SymfonyCert\Command\LockHandlerTestCommand;
     use DG\SymfonyCert\Command\MakesCacheCommand;
     use DG\SymfonyCert\Command\MakesCacheReportCommand;
@@ -42,6 +43,7 @@ namespace {
     $app->add(new DomCrawlerHHTestCommand());
     $app->add(new ExpressionLanguageCommand());
     $app->add(new LockHandlerTestCommand());
+    $app->add(new IntlTestCommand());
 
     $app->setDefaultCommand($reportCommand->getName());
     $app->setDispatcher($eventDispatcher);
