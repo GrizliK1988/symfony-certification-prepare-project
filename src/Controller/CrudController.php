@@ -222,7 +222,7 @@ class CrudController extends Controller
             ->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $formEvent) {
                 $data = $formEvent->getData();
 
-                $formEvent->getForm()->get('username')->addError(new FormError('Test error!'));
+//                $formEvent->getForm()->get('username')->addError(new FormError('Test error!'));
             })
             ->getForm();
 
