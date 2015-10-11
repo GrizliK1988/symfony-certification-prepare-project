@@ -21,6 +21,7 @@ use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\Forms;
+use Symfony\Component\HttpFoundation\AcceptHeader;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -33,8 +34,9 @@ use Symfony\Component\Validator\Validation;
 
 class CrudController extends Controller
 {
-    public function viewAction()
+    public function viewAction(Request $request)
     {
+        $accept = AcceptHeader::fromString($request->headers->get('accept'));
         $finder = new Finder();
         $userFiles = $finder->in(STORAGE_PATH)->name('*.json')->sortByModifiedTime()->files();
 
@@ -50,9 +52,25 @@ class CrudController extends Controller
         };
 
         $response = new Response();
-        $response->setContent($this->getTwig()->render('crud/view.html.twig', [
-            'users' => $users()
-        ]));
+        if ($accept->has('text/html')) {
+            $response->setContent($this->getTwig()->render('crud/view.html.twig', [
+                'users' => $users()
+            ]));
+        } elseif ($accept->has('application/json')) {
+            $response = new Response('', Response::HTTP_OK, ['Content-Type' => 'application/json']);
+            $userList = iterator_to_array($users());
+            $response->setContent(json_encode($userList));
+        } elseif ($accept->has('text/xml')) {
+            $response = new Response('', Response::HTTP_OK, ['Content-Type' => 'text/xml']);
+            $userList = iterator_to_array($users());
+
+            $xml = new \SimpleXMLElement('<root />');
+            array_walk($userList, function ($userData) use ($xml) {
+                $user = $xml->addChild('user');
+                $user->addChild('username', $userData['username']);
+            });
+            $response->setContent($xml->asXML());
+        }
         return $response;
     }
 
@@ -182,9 +200,11 @@ class CrudController extends Controller
 
                 $now = new \DateTime();
                 $dob = $data->dob;
-                $diff = $now->diff($dob);
 
-                $data->age = $diff->y;
+                if ($dob) {
+                    $diff = $now->diff($dob);
+                    $data->age = $diff->y;
+                }
             })
             ->addEventListener(FormEvents::POST_SET_DATA, function (FormEvent $formEvent) {
                 //log model data

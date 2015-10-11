@@ -16,6 +16,10 @@ namespace {
     use Symfony\Component\HttpFoundation\Request;
     use Symfony\Component\HttpFoundation\RequestStack;
     use Symfony\Component\HttpFoundation\Response;
+    use Symfony\Component\HttpFoundation\Session\Attribute\NamespacedAttributeBag;
+    use Symfony\Component\HttpFoundation\Session\Session;
+    use Symfony\Component\HttpFoundation\Session\Storage\Handler\NativeFileSessionHandler;
+    use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
 
     require_once __DIR__ . '/../app/autoload.php';
     require __DIR__ . '/../app/constants.php';
@@ -27,7 +31,18 @@ namespace {
     $container = \DG\App\loadContainer();
     $translator = \DG\App\loadTranslator($container);
 
+    $storage = new NativeSessionStorage([
+        'cookie_lifetime' => 3600,
+        'gc_probability' => 1,
+        'gc_divisor' => 1,
+        'gc_maxlifetime' => 10000,
+//        'cache_limiter' => session_cache_limiter()
+    ], new NativeFileSessionHandler());
+    $session = new Session($storage, new NamespacedAttributeBag());
+    $session->start();
+
     $request = Request::createFromGlobals();
+    $request->setSession($session);
     $requestStack = new RequestStack();
     $requestStack->push($request);
     $requestContext = new RequestStackContext($requestStack);
