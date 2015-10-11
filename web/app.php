@@ -26,7 +26,7 @@ namespace {
     require __DIR__ . '/../app/loadConfig.php';
     require __DIR__ . '/../app/loadContainer.php';
     require __DIR__ . '/../app/loadTranslator.php';
-    require __DIR__ . '/../app/initSession.php';
+    require __DIR__ . '/../app/init.php';
 
     Debug::enable();
     $container = \DG\App\loadContainer();
@@ -34,22 +34,7 @@ namespace {
 
     $request = Request::createFromGlobals();
     $request->setSession(\DG\App\initSession());
-    $requestStack = new RequestStack();
-    $requestStack->push($request);
-    $requestContext = new RequestStackContext($requestStack);
-
-    $appVariableReflection = new \ReflectionClass('\Symfony\Bridge\Twig\AppVariable');
-    $twigLoader = new \Twig_Loader_Filesystem([
-        VIEWS_PATH,
-        dirname($appVariableReflection->getFileName()) . '/Resources/views/Form'
-    ]);
-    $twig = new \Twig_Environment($twigLoader);
-    $formEngine = new TwigRendererEngine(['bootstrap_3_horizontal_layout.html.twig']);
-    $formEngine->setEnvironment($twig);
-    $twig->addExtension(new FormExtension(new TwigRenderer($formEngine, $container->get('csrf_token.manager'))));
-
-    $twig->addExtension(new TranslationExtension($translator));
-    $container->set('twig', $twig);
+    \DG\App\initTwig($container, $translator);
 
     preg_match('/\/(?P<controller>.+)\/(?P<action>.+)/', $request->getPathInfo(), $routingData);
 
