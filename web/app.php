@@ -7,19 +7,17 @@
  */
 
 namespace {
-    use Symfony\Bridge\Twig\Extension\FormExtension;
-    use Symfony\Bridge\Twig\Extension\TranslationExtension;
-    use Symfony\Bridge\Twig\Form\TwigRenderer;
-    use Symfony\Bridge\Twig\Form\TwigRendererEngine;
-    use Symfony\Component\Asset\Context\RequestStackContext;
+    use DG\SymfonyCert\Controller\CustomControllerResolver;
     use Symfony\Component\Debug\Debug;
+    use Symfony\Component\EventDispatcher\EventDispatcherInterface;
     use Symfony\Component\HttpFoundation\Request;
-    use Symfony\Component\HttpFoundation\RequestStack;
-    use Symfony\Component\HttpFoundation\Response;
-    use Symfony\Component\HttpFoundation\Session\Attribute\NamespacedAttributeBag;
-    use Symfony\Component\HttpFoundation\Session\Session;
-    use Symfony\Component\HttpFoundation\Session\Storage\Handler\NativeFileSessionHandler;
-    use Symfony\Component\HttpFoundation\Session\Storage\NativeSessionStorage;
+    use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
+    use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
+    use Symfony\Component\HttpKernel\Event\GetResponseEvent;
+    use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
+    use Symfony\Component\HttpKernel\Event\PostResponseEvent;
+    use Symfony\Component\HttpKernel\HttpKernel;
+    use Symfony\Component\HttpKernel\KernelEvents;
 
     require_once __DIR__ . '/../app/autoload.php';
     require __DIR__ . '/../app/constants.php';
@@ -36,11 +34,31 @@ namespace {
     $request->setSession(\DG\App\initSession());
     \DG\App\initTwig($container, $translator);
 
-    preg_match('/\/(?P<controller>.+)\/(?P<action>.+)/', $request->getPathInfo(), $routingData);
+    /** @var EventDispatcherInterface $eventDispatcher */
+    $eventDispatcher = $container->get('event_dispatcher');
+    $kernel = new HttpKernel($eventDispatcher, new CustomControllerResolver($container));
 
-    $controllerClass = sprintf("\\DG\\SymfonyCert\\Controller\\%sController", ucfirst($routingData['controller']));
-    $controller = new $controllerClass($container);
-    /** @var Response $response */
-    $response = $controller->{$routingData['action'] . 'Action'}($request);
+    $stat = [];
+    $eventDispatcher->addListener(KernelEvents::REQUEST, function (GetResponseEvent $event) use (&$stat) {
+        $stat[] = sprintf("Request came in %s", $event->getRequest()->getPathInfo());
+    });
+    $eventDispatcher->addListener(KernelEvents::CONTROLLER, function (FilterControllerEvent $event) use (&$stat) {
+        $stat[] = sprintf("Controller %s::%s selected", get_class($event->getController()[0]), $event->getController()[1]);
+    });
+    $eventDispatcher->addListener(KernelEvents::EXCEPTION, function (GetResponseForExceptionEvent $event) use (&$stat) {
+        $stat[] = sprintf("Exception thrown");
+    });
+    $eventDispatcher->addListener(KernelEvents::RESPONSE, function (FilterResponseEvent $event) use (&$stat) {
+        $content = $event->getResponse()->getContent();
+        $newContent = str_replace('</body>', '<pre>'.print_r($stat, 1).'</pre></body>', $content);
+        $event->getResponse()->setContent($newContent);
+    });
+    $eventDispatcher->addListener(KernelEvents::TERMINATE, function (PostResponseEvent $event) use (&$stat) {
+        //some heavy logic
+    });
+
+    $response = $kernel->handle($request);
     $response->send();
+
+    $kernel->terminate($request, $response);
 }
