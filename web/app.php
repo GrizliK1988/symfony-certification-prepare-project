@@ -26,23 +26,14 @@ namespace {
     require __DIR__ . '/../app/loadConfig.php';
     require __DIR__ . '/../app/loadContainer.php';
     require __DIR__ . '/../app/loadTranslator.php';
+    require __DIR__ . '/../app/initSession.php';
 
     Debug::enable();
     $container = \DG\App\loadContainer();
     $translator = \DG\App\loadTranslator($container);
 
-    $storage = new NativeSessionStorage([
-        'cookie_lifetime' => 3600,
-        'gc_probability' => 1,
-        'gc_divisor' => 1,
-        'gc_maxlifetime' => 10000,
-//        'cache_limiter' => session_cache_limiter()
-    ], new NativeFileSessionHandler());
-    $session = new Session($storage, new NamespacedAttributeBag());
-    $session->start();
-
     $request = Request::createFromGlobals();
-    $request->setSession($session);
+    $request->setSession(\DG\App\initSession());
     $requestStack = new RequestStack();
     $requestStack->push($request);
     $requestContext = new RequestStackContext($requestStack);
