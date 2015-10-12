@@ -15,6 +15,7 @@ namespace {
     use DG\SymfonyCert\Command\LockHandlerTestCommand;
     use DG\SymfonyCert\Command\MakesCacheCommand;
     use DG\SymfonyCert\Command\MakesCacheReportCommand;
+    use DG\SymfonyCert\Command\ModelsCommand;
     use DG\SymfonyCert\Service\ServiceCallsStatisticsReporter;
     use Symfony\Component\Console\Application;
     use Symfony\Component\Console\ConsoleEvents;
@@ -44,6 +45,7 @@ namespace {
     $app->add(new ExpressionLanguageCommand());
     $app->add(new LockHandlerTestCommand());
     $app->add(new IntlTestCommand());
+    $app->add(new ModelsCommand($container));
 
     $app->setDefaultCommand($reportCommand->getName());
     $app->setDispatcher($eventDispatcher);

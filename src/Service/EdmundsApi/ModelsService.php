@@ -16,6 +16,8 @@ use GuzzleHttp;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
+use Symfony\Component\OptionsResolver\Options;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ModelsService extends BaseApiService
 {
@@ -51,6 +53,28 @@ class ModelsService extends BaseApiService
 
     public function getModel($make, $model, array $options = [])
     {
+        $resolver = new OptionsResolver();
+        $resolver->setDefaults([
+            'year' => 1990,
+            'view' => 'basic'
+        ]);
+
+        $resolver->setDefined('state');
+        $resolver->setRequired(['state', 'view']);
+        $resolver->setAllowedTypes('year', 'integer');
+        $resolver->setAllowedValues('state', ['new', 'used']);
+        $resolver->setDefault('state', function (Options $options, $previousValue) {
+            if ($options['year'] >= 2015) {
+                return 'new';
+            }
+
+            return $previousValue;
+        });
+
+//        $resolver->isDefined('state');
+
+        $options = $resolver->resolve($options);
+
         $client = new GuzzleHttp\Client();
 
         $queryParams = array_merge($options, ['fmt' => 'json', 'api_key' => $this->apiKey]);
