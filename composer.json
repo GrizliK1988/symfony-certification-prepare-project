@@ -26,6 +26,7 @@
         "symfony/translation": "^2.7",
         "symfony/validator": "^2.7",
         "symfony/http-kernel": "^2.7",
-        "symfony/intl": "^2.7"
+        "symfony/intl": "^2.7",
+        "symfony/routing": "^2.7"
     }
 }
