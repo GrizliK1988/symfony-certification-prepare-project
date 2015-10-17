@@ -12,14 +12,24 @@ namespace DG\SymfonyCert\Controller;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ControllerResolverInterface;
+use Symfony\Component\Routing\Matcher\UrlMatcher;
 
 class CustomControllerResolver implements ControllerResolverInterface
 {
+    /**
+     * @var ContainerInterface
+     */
     private $container;
 
-    public function __construct(ContainerInterface $container)
+    /**
+     * @var UrlMatcher
+     */
+    private $urlMatcher;
+
+    public function __construct(ContainerInterface $container, UrlMatcher $urlMatcher)
     {
         $this->container = $container;
+        $this->urlMatcher = $urlMatcher;
     }
 
     /**
@@ -42,12 +52,22 @@ class CustomControllerResolver implements ControllerResolverInterface
      */
     public function getController(Request $request)
     {
-        preg_match('/\/(?P<controller>.+)\/(?P<action>.+)/', $request->getPathInfo(), $routingData);
+        $route = $this->urlMatcher->matchRequest($request);
 
-        $controllerClass = sprintf("\\DG\\SymfonyCert\\Controller\\%sController", ucfirst($routingData['controller']));
+        $controllerClass = sprintf("\\DG\\SymfonyCert\\Controller\\%sController", ucfirst($route['_controller']));
         $controller = new $controllerClass($this->container);
 
-        return [$controller, $routingData['action'] . 'Action'];
+        $attributes = [];
+        foreach ($route as $key => $value) {
+            if (strpos($key, '_') !== 0) {
+                $attributes[$key] = $value;
+            } else {
+                $request->attributes->set($key, $value);
+            }
+        }
+        $request->attributes->set('data', $attributes);
+
+        return [$controller, $route['_action'] . 'Action'];
     }
 
     /**

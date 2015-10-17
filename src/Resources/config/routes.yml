@@ -1,0 +1,16 @@
+home_index:
+    path: /home/index
+    host: localhost
+    defaults:
+        _controller: Home
+        _action: index
+
+home_hello:
+    path: /home/hello/{name}
+    host: "{host}.{domain}"
+    defaults:
+        _controller: Home
+        _action: hello
+        domain: dev
+    requirements:
+        domain: dev|loc

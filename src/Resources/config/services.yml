@@ -82,3 +82,7 @@ services:
     translator:
         class: Symfony\Component\Translation\Translator
         synthetic: true
+
+    url_generator:
+        class: Symfony\Component\Routing\Generator\UrlGenerator
+        synthetic: true

@@ -8,6 +8,7 @@
 
 namespace DG\SymfonyCert\Controller;
 
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class HomeController
@@ -18,6 +19,13 @@ class HomeController
     public function indexAction()
     {
         return new Response('Hello!');
+    }
+
+    public function helloAction(Request $request)
+    {
+        var_dump($request->attributes->all());
+
+        return new Response(sprintf('Hello, %s!', $request->attributes->get('data')['name']));
     }
 
     public function xmlAction()

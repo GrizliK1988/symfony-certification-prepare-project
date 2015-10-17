@@ -26,6 +26,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Translation\Translator;
 use Symfony\Component\Validator\Constraints\Email;
@@ -54,7 +55,8 @@ class CrudController extends Controller
         $response = new Response();
         if ($accept->has('text/html')) {
             $response->setContent($this->getTwig()->render('crud/view.html.twig', [
-                'users' => $users()
+                'users' => $users(),
+                'urlGenerator' => $this->urlGenerator()
             ]));
         } elseif ($accept->has('application/json')) {
             $response = new Response('', Response::HTTP_OK, ['Content-Type' => 'application/json']);
@@ -76,7 +78,7 @@ class CrudController extends Controller
 
     public function addAction(Request $request)
     {
-        $form = $this->createForm('add', new UserDataClass());
+        $form = $this->createForm($request, new UserDataClass());
 
         if ($request->isMethod('POST')) {
             $form->handleRequest($request);
@@ -92,20 +94,21 @@ class CrudController extends Controller
                 $fs = new Filesystem();
                 $fs->dumpFile(STORAGE_PATH . uniqid() . '.json', json_encode($data, JSON_PRETTY_PRINT));
 
-                return new RedirectResponse('/app.php/crud/view');
+                return new RedirectResponse($this->urlGenerator()->generate('crud_view'));
             }
         }
 
         $response = new Response();
         $response->setContent($this->getTwig()->render('crud/add.html.twig', [
-            'form' => $form->createView()
+            'form' => $form->createView(),
+            'urlGenerator' => $this->urlGenerator()
         ]));
         return $response;
     }
 
     public function editAction(Request $request)
     {
-        $id = $request->query->get('id');
+        $id = $request->attributes->get('data')['id'];
         $userJson = file_get_contents(STORAGE_PATH . $id . '.json');
         $data = json_decode($userJson, true);
 
@@ -117,7 +120,7 @@ class CrudController extends Controller
         $userClass->age = isset($data['age']) ? $data['age'] : 0;
         $userClass->id = $id;
 
-        $form = $this->createForm('edit?id=' . $id, $userClass);
+        $form = $this->createForm($request, $userClass);
         if ($request->isMethod('POST') && $form->handleRequest($request) && $form->isValid()) {
             $data = $form->getData();
             if ($data->photo) {
@@ -133,22 +136,23 @@ class CrudController extends Controller
             $fs = new Filesystem();
             $fs->dumpFile(STORAGE_PATH . $id . '.json', json_encode($data, JSON_PRETTY_PRINT));
 
-            return new RedirectResponse('/app.php/crud/view');
+            return new RedirectResponse($this->urlGenerator()->generate('crud_view'));
         }
 
         $response = new Response();
         $response->setContent($this->getTwig()->render('crud/add.html.twig', [
-            'form' => $form->createView()
+            'form' => $form->createView(),
+            'urlGenerator' => $this->urlGenerator()
         ]));
         return $response;
     }
 
     /**
-     * @param $action
+     * @param Request $request
      * @param UserDataClass|null $defaultData
      * @return \Symfony\Component\Form\Form
      */
-    private function createForm($action, UserDataClass $defaultData)
+    private function createForm(Request $request, UserDataClass $defaultData)
     {
         /** @var CsrfTokenManager $csrfTokenManager */
         $csrfTokenManager = $this->get('csrf_token.manager');
@@ -169,7 +173,7 @@ class CrudController extends Controller
             ->getFormFactory();
 
         $form = $formFactory->createBuilder('form', $defaultData, [
-            'action' => '/app.php/crud/' . $action,
+            'action' => $this->urlGenerator()->generate($request->attributes->get('_route'), $request->attributes->get('data')),
             'method' => 'POST',
             'attr' => [
             ]
@@ -227,5 +231,13 @@ class CrudController extends Controller
             ->getForm();
 
         return $form;
+    }
+
+    /**
+     * @return UrlGenerator
+     */
+    private function urlGenerator()
+    {
+        return $this->get('url_generator');
     }
 } 
