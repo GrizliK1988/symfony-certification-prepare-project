@@ -14,3 +14,15 @@ home_hello:
         domain: dev
     requirements:
         domain: dev|loc
+
+api_user_get:
+    path: /api/users/get
+    defaults:
+        _controller: ApiUsers
+        _action: get
+
+api_admin:
+    path: /api/admin
+    defaults:
+        _controller: ApiUsers
+        _action: admin

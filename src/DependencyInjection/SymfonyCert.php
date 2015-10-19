@@ -10,11 +10,14 @@ namespace DG\SymfonyCert\DependencyInjection;
 
 
 use DG\SymfonyCert\DependencyInjection\Compiler\AddEventDispatcherCompilerPass;
+use DG\SymfonyCert\DependencyInjection\Compiler\ApiUsersCompilerPass;
+use DG\SymfonyCert\DependencyInjection\Compiler\AuthenticationProviderManagerCompilerPass;
 use DG\SymfonyCert\DependencyInjection\Compiler\RegisterSerializersCompilerPass;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\EventDispatcher\DependencyInjection\RegisterListenersPass;
 
 class SymfonyCert
@@ -25,10 +28,13 @@ class SymfonyCert
         $containerBuilder->addCompilerPass(new RegisterSerializersCompilerPass());
         $containerBuilder->addCompilerPass(new AddEventDispatcherCompilerPass());
         $containerBuilder->addCompilerPass(new RegisterListenersPass());
+        $containerBuilder->addCompilerPass(new ApiUsersCompilerPass());
+        $containerBuilder->addCompilerPass(new AuthenticationProviderManagerCompilerPass());
         $containerBuilder->registerExtension(new SymfonyCertDIExtension());
+        $containerBuilder->registerExtension(new SecurityExtension());
 
-        $xmlLoader = new XmlFileLoader($containerBuilder, new FileLocator(__DIR__ . '/../../app/config'));
-        $xmlLoader->load('config.xml');
+        $yamlLoader = new YamlFileLoader($containerBuilder, new FileLocator(__DIR__ . '/../../app/config'));
+        $yamlLoader->load('security.yml');
 
         $containerBuilder->loadFromExtension('symfony_cert', $config);
 

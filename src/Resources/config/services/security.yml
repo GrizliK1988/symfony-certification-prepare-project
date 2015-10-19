@@ -1,0 +1,30 @@
+parameters:
+    token_storage.class: Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage
+
+    security.api_user_provider.class: DG\SymfonyCert\Service\Security\UserProvider\ApiUserProvider
+    security.api_authentication_provider.class: DG\SymfonyCert\Service\Security\Authentication\Provider\ApiAuthenticationProvider
+    security.authentication_provider_manager.class: Symfony\Component\Security\Core\Authentication\AuthenticationProviderManager
+    security.api_authentication_listener.class: DG\SymfonyCert\Service\Security\Firewall\ApiAuthenticationListener
+
+services:
+    token_storage:
+        class: %token_storage.class%
+
+    security.api_user_provider:
+        class: %security.api_user_provider.class%
+
+    security.api_authentication_provider:
+        class: %security.api_authentication_provider.class%
+        arguments: [@security.api_user_provider]
+        tags:
+            - {name: security.authentication_provider}
+
+    security.authentication_provider_manager:
+        class: %security.authentication_provider_manager.class%
+        arguments: [[], false]
+        calls:
+            - [setEventDispatcher, [@event_dispatcher]]
+
+    security.api_authentication_listener:
+        class: %security.api_authentication_listener.class%
+        arguments: [@security.authentication_provider_manager, @token_storage]

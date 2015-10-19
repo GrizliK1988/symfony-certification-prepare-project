@@ -1,0 +1,22 @@
+security:
+    firewalls:
+        api_auth_by_key:
+            keys:
+                -
+                    key: '654321'
+                    name: Admin
+                    roles: [ROLE_ADMIN]
+                -
+                    key: '123456'
+                    name: Test User
+                    roles: [ROLE_USER]
+        dao_auth:
+            users:
+                -
+                    username: admin
+                    password: '654321'
+                    roles: [ROLE_ADMIN]
+                -
+                    username: test
+                    password: '123456'
+                    roles: [ROLE_USER]

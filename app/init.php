@@ -140,6 +140,7 @@ function initRouting(ContainerInterface $container)
     $requestContext = new RequestContext();
     $requestContext->fromRequest(Request::createFromGlobals());
     $matcher = new UrlMatcher($routeCollection, $requestContext);
+    $container->set('url_matcher', $matcher);
 
     $urlGenerator = new UrlGenerator($routeCollection, $requestContext);
     $container->set('url_generator', $urlGenerator);

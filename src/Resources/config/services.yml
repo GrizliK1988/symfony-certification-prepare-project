@@ -86,3 +86,7 @@ services:
     url_generator:
         class: Symfony\Component\Routing\Generator\UrlGenerator
         synthetic: true
+
+    url_matcher:
+        class: Symfony\Component\Routing\Matcher\UrlMatcher
+        synthetic: true
