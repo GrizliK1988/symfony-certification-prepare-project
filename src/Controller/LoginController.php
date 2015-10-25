@@ -37,6 +37,11 @@ class LoginController extends Controller
         //do nothing because security component will start authentication checking
     }
 
+    public function logoutAction()
+    {
+        //do nothing because security component will start logout
+    }
+
     private function createLoginForm()
     {
         /** @var Translator $translator */

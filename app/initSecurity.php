@@ -31,6 +31,8 @@ use Symfony\Component\Security\Http\Firewall;
 use Symfony\Component\Security\Http\Firewall\ExceptionListener;
 use Symfony\Component\Security\Http\FirewallMap;
 use Symfony\Component\Security\Http\HttpUtils;
+use Symfony\Component\Security\Http\Logout\CookieClearingLogoutHandler;
+use Symfony\Component\Security\Http\Logout\DefaultLogoutSuccessHandler;
 use Symfony\Component\Security\Http\RememberMe\ResponseListener;
 use Symfony\Component\Security\Http\RememberMe\TokenBasedRememberMeServices;
 use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategy;
@@ -79,10 +81,18 @@ function initSecurity(ContainerInterface $container, HttpKernel $kernel)
 
     $authEntryPoint = new FormAuthenticationEntryPoint($kernel, $httpUtils, '/login');
     $exceptionListener = new ExceptionListener($tokenStorage, $trustResolver, $httpUtils, 'exception_listener', $authEntryPoint);
-    $map->add(new RequestMatcher('^/login'), [
+
+    $logoutListener = new Firewall\LogoutListener($tokenStorage, $httpUtils, new DefaultLogoutSuccessHandler($httpUtils, '/login'));
+    $logoutListener->addHandler(new CookieClearingLogoutHandler(['remember_crud' => [
+        'path' => '/',
+        'domain' => ''
+    ]]));
+
+    $map->add(new RequestMatcher('^/(login|logout)'), [
         new Firewall\AnonymousAuthenticationListener($tokenStorage, 'anonymous_listener'),
         getSimpleAuthFormListener($container, $kernel),
-        $accessListener
+        $logoutListener,
+        $accessListener,
     ], $exceptionListener);
 
     $rememberMeListener = new Firewall\RememberMeListener($tokenStorage, getRememberMeServices(), $authManager, null, $evenDispatcher);

@@ -38,3 +38,9 @@ login_check:
     defaults:
         _controller: Login
         _action: loginCheck
+
+logout:
+    path: /logout
+    defaults:
+        _controller: Login
+        _action: logout
