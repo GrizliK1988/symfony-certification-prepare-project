@@ -1,17 +1,40 @@
 parameters:
+    user_checker.class: Symfony\Component\Security\Core\User\UserChecker
     token_storage.class: Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage
 
     security.api_user_provider.class: DG\SymfonyCert\Service\Security\UserProvider\ApiUserProvider
     security.api_authentication_provider.class: DG\SymfonyCert\Service\Security\Authentication\Provider\ApiAuthenticationProvider
     security.authentication_provider_manager.class: Symfony\Component\Security\Core\Authentication\AuthenticationProviderManager
     security.api_authentication_listener.class: DG\SymfonyCert\Service\Security\Firewall\ApiAuthenticationListener
+    security.dao_authentication_provider.class: Symfony\Component\Security\Core\Authentication\Provider\DaoAuthenticationProvider
+    security.dao_authentication_provider_factory.class: DG\SymfonyCert\Service\Security\Authentication\Provider\DaoAuthenticationProviderFactory
+
+    security.remember_me_authentication_provider.class: Symfony\Component\Security\Core\Authentication\Provider\RememberMeAuthenticationProvider
 
 services:
+    user_checker:
+        class: %user_checker.class%
+
     token_storage:
         class: %token_storage.class%
 
     security.api_user_provider:
         class: %security.api_user_provider.class%
+
+    security.dao_authentication_provider_factory:
+        class: %security.dao_authentication_provider_factory.class%
+
+    security.dao_authentication_provider:
+        class: %security.dao_authentication_provider.class%
+        factory: [@security.dao_authentication_provider_factory, create]
+        tags:
+            - {name: security.authentication_provider}
+
+    security.remember_me_authentication_provider:
+        class: %security.remember_me_authentication_provider.class%
+        arguments: [@user_checker, 'remember_me_crud', 'remember_me_auth_provider']
+        tags:
+            - {name: security.authentication_provider}
 
     security.api_authentication_provider:
         class: %security.api_authentication_provider.class%

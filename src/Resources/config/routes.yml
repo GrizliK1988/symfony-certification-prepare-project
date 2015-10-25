@@ -26,3 +26,15 @@ api_admin:
     defaults:
         _controller: ApiUsers
         _action: admin
+
+login:
+    path: /login
+    defaults:
+        _controller: Login
+        _action: login
+
+login_check:
+    path: /login_check
+    defaults:
+        _controller: Login
+        _action: loginCheck

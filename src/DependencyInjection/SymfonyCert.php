@@ -12,6 +12,7 @@ namespace DG\SymfonyCert\DependencyInjection;
 use DG\SymfonyCert\DependencyInjection\Compiler\AddEventDispatcherCompilerPass;
 use DG\SymfonyCert\DependencyInjection\Compiler\ApiUsersCompilerPass;
 use DG\SymfonyCert\DependencyInjection\Compiler\AuthenticationProviderManagerCompilerPass;
+use DG\SymfonyCert\DependencyInjection\Compiler\DaoAuthenticationProviderCompilerPass;
 use DG\SymfonyCert\DependencyInjection\Compiler\RegisterSerializersCompilerPass;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
