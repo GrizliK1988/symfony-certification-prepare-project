@@ -17,6 +17,7 @@ namespace {
     use DG\SymfonyCert\Command\MakesCacheReportCommand;
     use DG\SymfonyCert\Command\ModelsCommand;
     use DG\SymfonyCert\Command\ProcessCommand;
+    use DG\SymfonyCert\Command\TestTimingAttackCommand;
     use DG\SymfonyCert\Service\ServiceCallsStatisticsReporter;
     use Symfony\Component\Console\Application;
     use Symfony\Component\Console\ConsoleEvents;
@@ -48,6 +49,7 @@ namespace {
     $app->add(new IntlTestCommand());
     $app->add(new ModelsCommand($container));
     $app->add(new ProcessCommand());
+    $app->add(new TestTimingAttackCommand());
 
     $app->setDefaultCommand($reportCommand->getName());
     $app->setDispatcher($eventDispatcher);

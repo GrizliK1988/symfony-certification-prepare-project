@@ -10,6 +10,7 @@ namespace DG\SymfonyCert\Controller;
 
 
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
@@ -31,7 +32,7 @@ class ApiUsersController extends Controller
         ]);
     }
 
-    public function adminAction()
+    public function adminAction(Request $request)
     {
         /** @var TokenStorage $tokenStorage */
         $tokenStorage = $this->get('token_storage');
@@ -39,7 +40,8 @@ class ApiUsersController extends Controller
         $token = $tokenStorage->getToken();
 
         return new JsonResponse([
-            'currentUser' => $token->getUser()
+            'currentUser' => $token->getUser(),
+            'data' => $request->headers->get('X-Test') === str_pad('', 20, 'a')
         ]);
     }
 } 
