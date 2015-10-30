@@ -11,7 +11,16 @@
 <body>
 
 <div class="row well">
-    <div class="col-md-10">
+    <div class="col-md-7">
+    </div>
+    <div class="col-md-3">
+        {{ translator.trans('hello_user', {'%username%': user.username}, 'auth') }}
+        <br>
+        {{ translator.transChoice('plural', 0, {'%count%': 0}) }},
+        {{ translator.transChoice('plural', 1, {'%count%': 1}) }},
+        {{ translator.transChoice('plural', 2, {'%count%': 2}) }},
+        {{ translator.transChoice('plural', 3, {'%count%': 3}) }},
+        {{ translator.transChoice('plural', 4, {'%count%': 4}) }}
     </div>
     <div class="col-md-2">
         <a class="btn btn-success" href="{{ urlGenerator.generate('crud_view') }}"><i class="glyphicon glyphicon-th-list"></i> View</a>

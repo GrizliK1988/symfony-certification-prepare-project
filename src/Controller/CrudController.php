@@ -11,6 +11,7 @@ namespace DG\SymfonyCert\Controller;
 
 use DG\SymfonyCert\Form\FormTypeGuesser;
 use DG\SymfonyCert\Form\UserDataClass;
+use DG\SymfonyCert\Service\TranslationFactory;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
@@ -56,7 +57,9 @@ class CrudController extends Controller
         if ($accept->has('text/html')) {
             $response->setContent($this->getTwig()->render('crud/view.html.twig', [
                 'users' => $users(),
-                'urlGenerator' => $this->urlGenerator()
+                'urlGenerator' => $this->urlGenerator(),
+                'translator' => TranslationFactory::createTranslator($request),
+                'user' => $this->getUser(),
             ]));
         } elseif ($accept->has('application/json')) {
             $response = new Response('', Response::HTTP_OK, ['Content-Type' => 'application/json']);
@@ -101,6 +104,8 @@ class CrudController extends Controller
         $response = new Response();
         $response->setContent($this->getTwig()->render('crud/add.html.twig', [
             'form' => $form->createView(),
+            'user' => $this->getUser(),
+            'translator' => TranslationFactory::createTranslator($request),
             'urlGenerator' => $this->urlGenerator()
         ]));
         return $response;
@@ -142,6 +147,8 @@ class CrudController extends Controller
         $response = new Response();
         $response->setContent($this->getTwig()->render('crud/add.html.twig', [
             'form' => $form->createView(),
+            'user' => $this->getUser(),
+            'translator' => TranslationFactory::createTranslator($request),
             'urlGenerator' => $this->urlGenerator()
         ]));
         return $response;

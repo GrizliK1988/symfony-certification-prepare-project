@@ -64,6 +64,10 @@ class CustomControllerResolver implements ControllerResolverInterface
             } else {
                 $request->attributes->set($key, $value);
             }
+
+            if ($key === '_locale') {
+                $request->getSession()->set('locale', $value);
+            }
         }
         $request->attributes->set('data', $attributes);
 

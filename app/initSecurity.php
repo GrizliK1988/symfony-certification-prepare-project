@@ -97,7 +97,7 @@ function initSecurity(ContainerInterface $container, HttpKernel $kernel)
 
     $rememberMeListener = new Firewall\RememberMeListener($tokenStorage, getRememberMeServices(), $authManager, null, $evenDispatcher);
 
-    $map->add(new RequestMatcher('^/crud'), [
+    $map->add(new RequestMatcher('^/.+/crud'), [
         $rememberMeListener,
         $accessListener
     ], $exceptionListener);

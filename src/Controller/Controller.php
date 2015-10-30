@@ -10,6 +10,8 @@ namespace DG\SymfonyCert\Controller;
 
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\User\User;
 
 class Controller
 {
@@ -34,5 +36,15 @@ class Controller
     public function getTwig()
     {
         return $this->get('twig');
+    }
+
+    /**
+     * @return User
+     */
+    public function getUser()
+    {
+        /** @var TokenStorageInterface $tokenStorage */
+        $tokenStorage = $this->container->get('token_storage');
+        return $tokenStorage->getToken()->getUser();
     }
 }

@@ -125,7 +125,9 @@ function initRouting(ContainerInterface $container)
         'id' => '.+'
     ]);
     $routeCollection->add('crud_edit', $editRoute);
-    $routeCollection->addPrefix('/crud');
+    $routeCollection->addPrefix('/{_locale}/crud');
+    $routeCollection->addDefaults(['_locale' => 'ru']);
+    $routeCollection->addRequirements(['_locale' => 'ru|en']);
 
     $locator = new FileLocator([SRC_PATH . 'Resources/config']);
     $loader = new YamlFileLoader($locator);
