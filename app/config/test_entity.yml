@@ -1,0 +1,10 @@
+DG\SymfonyCert\Entity\TestEntity:
+    attributes:
+        id:
+            groups: ['group1']
+        active:
+            groups: ['group1']
+        message:
+            groups: ['group2']
+        testVar:
+            groups: ['group2']

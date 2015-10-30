@@ -27,6 +27,12 @@ api_admin:
         _controller: ApiUsers
         _action: admin
 
+api_test_get:
+    path: /api/test/get
+    defaults:
+        _controller: ApiTest
+        _action: get
+
 login:
     path: /login
     defaults:
