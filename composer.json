@@ -28,6 +28,7 @@
         "symfony/http-kernel": "^2.7",
         "symfony/intl": "^2.7",
         "symfony/routing": "^2.7",
-        "symfony/serializer": "^2.7"
+        "symfony/serializer": "^2.7",
+        "symfony/var-dumper": "^2.7"
     }
 }
